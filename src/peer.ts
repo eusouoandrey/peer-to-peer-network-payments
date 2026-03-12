@@ -7,6 +7,7 @@ export class Peer {
   private socket?: net.Socket
   private buffer = ''
   private processedMessages = new Set<string>()
+  private pendingPayments = new Map<string, number>()
 
   constructor(
     private listenPort: number,
@@ -72,9 +73,29 @@ export class Peer {
 
     this.processedMessages.add(msg.id)
 
-    if (msg.type === "payment") {
-        this.balance += msg.amount
-        console.log(`You were paid ${msg.amount}!`)
+    if (msg.type === "payment_request") {
+      if(!msg.metadata?.amount){
+        console.log('Missing transaction amount ')
+        return
+      }
+      this.balance += msg.metadata.amount
+
+      console.log(`You were paid ${msg.metadata.amount}!`)
+
+      this.sendMessage({
+        id: msg.id,
+        type: "payment_ack"
+      })
+    }
+
+    else if (msg.type === "payment_ack") {
+      const amount = this.pendingPayments.get(msg.id)
+      if (amount) {
+        this.balance -= amount
+        this.pendingPayments.delete(msg.id)
+
+        console.log(`Payment ${msg.id} confirmed`)
+      }
     }
   }
 
@@ -88,15 +109,17 @@ export class Peer {
   }
 
   pay(amount: number) {
+    const messageId: string = crypto.randomUUID()
     const msg: PeerMessage = {
-      id: crypto.randomUUID(),
-      type: "payment",
-      amount
+      id: messageId,
+      type: "payment_request",
+      metadata: {
+        amount
+      }
     }
 
+    this.pendingPayments.set(messageId, amount)
     this.sendMessage(msg)
-
-    this.balance -= amount
   }
 
   getBalance() {
