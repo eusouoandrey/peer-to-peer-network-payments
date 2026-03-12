@@ -68,24 +68,23 @@ export class Peer {
     }
   }
 
-  private sendPaymentMessage(amount: number){
+  private sendMessage(msg: PeerMessage) {
     if (!this.socket) {
       console.log("Not connected to peer")
       return
     }
 
+    this.socket.write(encodeMessage(msg) + "\n")
+  }
+
+  pay(amount: number) {
     const msg: PeerMessage = {
       type: "payment",
       amount
     }
 
-    this.socket.write(encodeMessage(msg))
+    this.sendMessage(msg)
 
-    console.log("Sent")
-  }
-
-  pay(amount: number) {
-    this.sendPaymentMessage(amount)
     this.balance -= amount
   }
 
