@@ -5,6 +5,7 @@ import { decodeMessage, encodeMessage } from "./protocol"
 export class Peer {
   private balance = 0
   private socket?: net.Socket
+  private buffer = ''
 
   constructor(
     private listenPort: number,
@@ -19,12 +20,17 @@ export class Peer {
 
   private startServer() {
     const server = net.createServer((socket) => {
-        socket.on("data", (data) => {
-            console.log('Data received: ', data)
-            const raw = data.toString()
-            const msg = decodeMessage(raw)
-            this.handleMessage(msg)
-        })
+      socket.on("data", (data) => {
+        this.buffer += data.toString()
+
+        const messages = this.buffer.split("\n")
+        this.buffer = messages.pop() || ""
+
+        for (const raw of messages) {
+          const msg = decodeMessage(raw)
+          this.handleMessage(msg)
+        }
+      })
     })
 
     server.listen(this.listenPort, () => {
@@ -62,15 +68,13 @@ export class Peer {
     }
   }
 
-  pay(amount: number) {
+  private sendPaymentMessage(amount: number){
     if (!this.socket) {
       console.log("Not connected to peer")
       return
     }
 
-    this.balance -= amount
-
-    const msg = {
+    const msg: PeerMessage = {
       type: "payment",
       amount
     }
@@ -78,6 +82,11 @@ export class Peer {
     this.socket.write(encodeMessage(msg))
 
     console.log("Sent")
+  }
+
+  pay(amount: number) {
+    this.sendPaymentMessage(amount)
+    this.balance -= amount
   }
 
   getBalance() {
