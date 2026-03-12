@@ -1,0 +1,19 @@
+{
+  "name": "peer-to-peer-network-payments",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^25.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "description": "Interledger technical test",
+  "repository": "git@github.com:eusouoandrey/peer-to-peer-network-payments.git",
+  "author": "Andrey Torres <andreytdl@gmail.com>",
+  "license": "MIT"
+}
