@@ -1,6 +1,6 @@
-import net from "net"
-import { PeerMessage } from "./types"
-import { decodeMessage, encodeMessage } from "./protocol"
+import net from 'net'
+import { PeerMessage } from './types'
+import { decodeMessage, encodeMessage } from './protocol'
 
 export class Peer {
   private balance = 0
@@ -22,15 +22,15 @@ export class Peer {
 
   private startServer() {
     const server = net.createServer((socket) => {
-      console.log("Peer connected")
+      console.log('Peer connected')
 
       this.socket = socket
 
-      socket.on("data", (data) => {
+      socket.on('data', (data) => {
         this.buffer += data.toString()
 
-        const messages = this.buffer.split("\n")
-        this.buffer = messages.pop() || ""
+        const messages = this.buffer.split('\n')
+        this.buffer = messages.pop() || ''
 
         for (const raw of messages) {
           const msg = decodeMessage(raw)
@@ -40,7 +40,7 @@ export class Peer {
     })
 
     server.listen(this.listenPort, () => {
-        console.log(`Listening on port ${this.listenPort}`)
+      console.log(`Listening on port ${this.listenPort}`)
     })
   }
 
@@ -50,12 +50,12 @@ export class Peer {
       port: this.peerPort
     })
 
-    socket.on("connect", () => {
+    socket.on('connect', () => {
       console.log(`Connected to peer ${this.peerHost}:${this.peerPort}`)
     })
 
-    socket.on("error", (err) => {
-      console.log("Connection error:", err.message)
+    socket.on('error', (err) => {
+      console.log('Connection error:', err.message)
 
       //In the future, i'll implement an exponential backoff
       setTimeout(() => {
@@ -73,8 +73,8 @@ export class Peer {
 
     this.processedMessages.add(msg.id)
 
-    if (msg.type === "payment_request") {
-      if(!msg.metadata?.amount){
+    if (msg.type === 'payment_request') {
+      if (!msg.metadata?.amount) {
         console.log('Missing transaction amount ')
         return
       }
@@ -84,11 +84,9 @@ export class Peer {
 
       this.sendMessage({
         id: msg.id,
-        type: "payment_ack"
+        type: 'payment_ack'
       })
-    }
-
-    else if (msg.type === "payment_ack") {
+    } else if (msg.type === 'payment_ack') {
       const amount = this.pendingPayments.get(msg.id)
       if (amount) {
         this.balance -= amount
@@ -101,18 +99,18 @@ export class Peer {
 
   private sendMessage(msg: PeerMessage) {
     if (!this.socket) {
-      console.log("Not connected to peer")
+      console.log('Not connected to peer')
       return
     }
 
-    this.socket.write(encodeMessage(msg) + "\n")
+    this.socket.write(encodeMessage(msg) + '\n')
   }
 
   pay(amount: number) {
     const messageId: string = crypto.randomUUID()
     const msg: PeerMessage = {
       id: messageId,
-      type: "payment_request",
+      type: 'payment_request',
       metadata: {
         amount
       }
