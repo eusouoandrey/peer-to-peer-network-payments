@@ -6,6 +6,7 @@ export class Peer {
   private balance = 0
   private socket?: net.Socket
   private buffer = ''
+  private processedMessages = new Set<string>()
 
   constructor(
     private listenPort: number,
@@ -20,6 +21,10 @@ export class Peer {
 
   private startServer() {
     const server = net.createServer((socket) => {
+      console.log("Peer connected")
+
+      this.socket = socket
+
       socket.on("data", (data) => {
         this.buffer += data.toString()
 
@@ -61,9 +66,14 @@ export class Peer {
   }
 
   private handleMessage(msg: PeerMessage) {
+    if (this.processedMessages.has(msg.id)) {
+      return
+    }
+
+    this.processedMessages.add(msg.id)
+
     if (msg.type === "payment") {
         this.balance += msg.amount
-
         console.log(`You were paid ${msg.amount}!`)
     }
   }
@@ -79,6 +89,7 @@ export class Peer {
 
   pay(amount: number) {
     const msg: PeerMessage = {
+      id: crypto.randomUUID(),
       type: "payment",
       amount
     }
