@@ -19,12 +19,6 @@ export function startCLI(peer: Peer) {
 
       case 'pay':
         const amount = Number(arg)
-
-        if (Number.isNaN(amount)) {
-          console.log('Invalid amount')
-          break
-        }
-
         peer.pay(amount)
         break
 
