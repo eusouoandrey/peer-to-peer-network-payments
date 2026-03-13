@@ -1,5 +1,6 @@
 import readline from 'readline'
 import { Peer } from './peer'
+import { CliCommand } from './types'
 
 export function startCLI(peer: Peer) {
   const rl = readline.createInterface({
@@ -13,16 +14,16 @@ export function startCLI(peer: Peer) {
     const [command, arg] = line.trim().split(' ')
 
     switch (command) {
-      case 'balance':
+      case CliCommand.BALANCE:
         console.log(peer.getBalance())
         break
 
-      case 'pay':
+      case CliCommand.PAY:
         const amount = Number(arg)
         peer.pay(amount)
         break
 
-      case 'exit':
+      case CliCommand.EXIT:
         console.log('Goodbye.')
         process.exit(0)
 

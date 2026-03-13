@@ -1,5 +1,5 @@
 import net from 'net'
-import { PeerMessage } from './types'
+import { MessageType, PeerMessage } from './types'
 import { decodeMessage, encodeMessage } from './protocol'
 import crypto from 'crypto'
 
@@ -107,7 +107,7 @@ export class Peer {
 
     this.processedMessages.add(msg.id)
 
-    if (msg.type === 'payment_request') {
+    if (msg.type === MessageType.PAYMENT_REQUEST) {
       if (!msg.metadata?.amount) {
         console.log('Missing transaction amount')
         return
@@ -118,9 +118,9 @@ export class Peer {
 
       this.sendMessage({
         id: msg.id,
-        type: 'payment_ack'
+        type: MessageType.PAYMENT_ACK
       })
-    } else if (msg.type === 'payment_ack') {
+    } else if (msg.type === MessageType.PAYMENT_ACK) {
       const amount = this.pendingPayments.get(msg.id)
 
       if (amount) {
@@ -148,7 +148,7 @@ export class Peer {
     const messageId = crypto.randomUUID()
     const msg: PeerMessage = {
       id: messageId,
-      type: 'payment_request',
+      type: MessageType.PAYMENT_REQUEST,
       metadata: { amount }
     }
 
